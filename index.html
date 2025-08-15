@@ -1,169 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IIEST Shibpur - System Information</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        header {
-            background-color: #004080;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        table {
-            border-collapse: collapse;
-            width: 90%;
-            margin: 20px auto;
-            background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background-color: #004080;
-            color: white;
-        }
-        form {
-            width: 90%;
-            margin: 20px auto;
-            padding: 10px;
-            background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        input, select, button {
-            padding: 8px;
-            font-size: 14px;
-        }
-        button {
-            background: #004080;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #003060;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Core Usage Table</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f8f9fa;
+    }
+    h2 {
+        text-align: center;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+    }
+    th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+    }
+    th {
+        background-color: #007bff;
+        color: white;
+    }
+    input[type="number"], input[type="date"], input[type="text"] {
+        width: 100%;
+        padding: 4px;
+        box-sizing: border-box;
+    }
+    button {
+        padding: 4px 8px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    button:hover {
+        background-color: #218838;
+    }
+    .readonly {
+        background-color: #f0f0f0;
+        pointer-events: none;
+    }
+</style>
 </head>
 <body>
 
-<header>
-    <h1>IIEST Shibpur - System Information</h1>
-</header>
+<h2>Core Usage Table</h2>
 
-<h2 style="text-align:center;">Add System + Core Details</h2>
-<form id="combinedForm">
-    <!-- System Details -->
-    <input type="text" placeholder="System Name" id="sysName" required>
-    <input type="text" placeholder="Allotted To" id="sysAllotted" required>
-    <input type="number" placeholder="RAM (GB)" id="sysRAM" min="0" required>
-    <input type="text" placeholder="ROM" id="sysROM" required>
-    <input type="text" placeholder="Processor" id="sysProcessor" required>
-    <input type="text" placeholder="Generation" id="sysGeneration" required>
-
-    <!-- Core Details -->
-    <input type="text" placeholder="User" id="coreUser" required>
-    <select id="coreTotal" required>
-        <option value="" disabled selected>Select Total Core</option>
-        <!-- Options from 1 to 16 -->
-        <script>
-            for(let i = 1; i <= 16; i++) {
-                document.write(`<option value="${i}">${i}</option>`);
-            }
-        </script>
-    </select>
-    <input type="number" placeholder="Available Core" id="coreAvailable" min="0" required>
-    <input type="number" placeholder="Core in Process" id="coreProcess" min="0" required>
-
-    <button type="submit">Add to Both Tables</button>
-</form>
-
-<!-- System Table -->
-<h2 style="text-align:center;">System Details</h2>
-<table id="systemTable">
-    <thead>
-        <tr>
-            <th>System Name</th>
-            <th>Allotted To</th>
-            <th>RAM (GB)</th>
-            <th>ROM</th>
-            <th>Processor</th>
-            <th>Generation</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
-
-<!-- Core Table -->
-<h2 style="text-align:center;">Core Usage</h2>
 <table id="coreTable">
     <thead>
         <tr>
+            <th>Serial No.</th>
+            <th>System</th>
+            <th>Name</th>
+            <th>Processor</th>
+            <th>Generation</th>
             <th>User</th>
-            <th>Total Core</th>
-            <th>Available Core</th>
+            <th>Total Cores</th>
             <th>Core in Process</th>
+            <th>Available Cores</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Action</th>
         </tr>
     </thead>
-    <tbody></tbody>
+    <tbody>
+        <!-- Rows will be generated here -->
+    </tbody>
 </table>
 
 <script>
-document.getElementById('combinedForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+    const systems = 22;
+    const tableBody = document.querySelector("#coreTable tbody");
 
-    // Get values
-    let ram = parseInt(document.getElementById('sysRAM').value);
-    let availableCore = parseInt(document.getElementById('coreAvailable').value);
-    let coreProcess = parseInt(document.getElementById('coreProcess').value);
-    let totalCore = parseInt(document.getElementById('coreTotal').value);
+    // Load saved data from localStorage
+    let savedData = JSON.parse(localStorage.getItem("coreTableData")) || [];
 
-    // Validation: No negatives
-    if (ram < 0 || availableCore < 0 || coreProcess < 0) {
-        alert("Values cannot be negative!");
-        return;
+    // Create table rows
+    for (let i = 1; i <= systems; i++) {
+        const name = "Workstation";
+        const processor = "Intel Xeon";
+        const generation = "12th Gen";
+        const totalCores = 2048;
+
+        let rowData = savedData.find(item => item.system === `System ${i}`) || {
+            system: `System ${i}`,
+            name,
+            processor,
+            generation,
+            user: "",
+            totalCores,
+            coreProcess: "",
+            availableCores: totalCores,
+            startDate: "",
+            endDate: ""
+        };
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${i}</td>
+            <td>${rowData.system}</td>
+            <td>${rowData.name}</td>
+            <td>${rowData.processor}</td>
+            <td>${rowData.generation}</td>
+            <td><input type="text" value="${rowData.user}" class="readonly"></td>
+            <td>${rowData.totalCores}</td>
+            <td><input type="number" min="0" max="${rowData.totalCores}" value="${rowData.coreProcess}" class="coreProcess readonly"></td>
+            <td class="availableCores">${rowData.availableCores}</td>
+            <td><input type="date" value="${rowData.startDate}" class="readonly"></td>
+            <td><input type="date" value="${rowData.endDate}" class="readonly"></td>
+            <td><button class="editBtn">Edit</button></td>
+        `;
+        tableBody.appendChild(row);
     }
 
-    // Validation: Available + Process should not exceed Total Core
-    if (availableCore + coreProcess > totalCore) {
-        alert("Available Core + Core in Process cannot exceed Total Core!");
-        return;
+    // Update Available Cores instantly
+    document.addEventListener("input", function (event) {
+        if (event.target.classList.contains("coreProcess")) {
+            const row = event.target.closest("tr");
+            const total = parseInt(row.children[6].innerText);
+            const inProcess = parseInt(event.target.value) || 0;
+            row.querySelector(".availableCores").innerText = total - inProcess;
+        }
+    });
+
+    // Handle edit/save button click
+    document.addEventListener("click", function (event) {
+        if (event.target.classList.contains("editBtn")) {
+            const row = event.target.closest("tr");
+            const inputs = row.querySelectorAll("input");
+
+            if (event.target.innerText === "Edit") {
+                inputs.forEach(input => input.classList.remove("readonly"));
+                event.target.innerText = "Save";
+                event.target.style.backgroundColor = "#ffc107";
+            } else {
+                inputs.forEach(input => input.classList.add("readonly"));
+                event.target.innerText = "Edit";
+                event.target.style.backgroundColor = "#28a745";
+
+                saveTableData();
+                row.parentNode.prepend(row); // Move latest saved row to top
+                updateSerialNumbers();
+            }
+        }
+    });
+
+    // Save table data to localStorage
+    function saveTableData() {
+        let data = [];
+        document.querySelectorAll("#coreTable tbody tr").forEach(row => {
+            data.push({
+                system: row.children[1].innerText,
+                name: row.children[2].innerText,
+                processor: row.children[3].innerText,
+                generation: row.children[4].innerText,
+                user: row.children[5].querySelector("input").value,
+                totalCores: parseInt(row.children[6].innerText),
+                coreProcess: row.children[7].querySelector("input").value,
+                availableCores: parseInt(row.children[8].innerText),
+                startDate: row.children[9].querySelector("input").value,
+                endDate: row.children[10].querySelector("input").value
+            });
+        });
+        localStorage.setItem("coreTableData", JSON.stringify(data));
     }
 
-    // Add to System Table
-    let sysTable = document.getElementById('systemTable').querySelector('tbody');
-    let sysRow = sysTable.insertRow();
-    sysRow.insertCell(0).textContent = document.getElementById('sysName').value;
-    sysRow.insertCell(1).textContent = document.getElementById('sysAllotted').value;
-    sysRow.insertCell(2).textContent = ram;
-    sysRow.insertCell(3).textContent = document.getElementById('sysROM').value;
-    sysRow.insertCell(4).textContent = document.getElementById('sysProcessor').value;
-    sysRow.insertCell(5).textContent = document.getElementById('sysGeneration').value;
-
-    // Add to Core Table
-    let coreTable = document.getElementById('coreTable').querySelector('tbody');
-    let coreRow = coreTable.insertRow();
-    coreRow.insertCell(0).textContent = document.getElementById('coreUser').value;
-    coreRow.insertCell(1).textContent = totalCore;
-    coreRow.insertCell(2).textContent = availableCore;
-    coreRow.insertCell(3).textContent = coreProcess;
-
-    // Reset form
-    this.reset();
-});
+    // Update serial numbers after reordering
+    function updateSerialNumbers() {
+        const rows = tableBody.querySelectorAll("tr");
+        rows.forEach((row, index) => {
+            row.children[0].innerText = index + 1;
+        });
+    }
 </script>
 
 </body>
