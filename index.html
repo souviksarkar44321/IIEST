@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IIEST Shibpur - System Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #004080;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        table {
+            border-collapse: collapse;
+            width: 90%;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #004080;
+            color: white;
+        }
+        form {
+            width: 90%;
+            margin: 20px auto;
+            padding: 10px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        input, select, button {
+            padding: 8px;
+            font-size: 14px;
+        }
+        button {
+            background: #004080;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #003060;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>IIEST Shibpur - System Information</h1>
+</header>
+
+<h2 style="text-align:center;">Add System + Core Details</h2>
+<form id="combinedForm">
+    <!-- System Details -->
+    <input type="text" placeholder="System Name" id="sysName" required>
+    <input type="text" placeholder="Allotted To" id="sysAllotted" required>
+    <input type="number" placeholder="RAM (GB)" id="sysRAM" min="0" required>
+    <input type="text" placeholder="ROM" id="sysROM" required>
+    <input type="text" placeholder="Processor" id="sysProcessor" required>
+    <input type="text" placeholder="Generation" id="sysGeneration" required>
+
+    <!-- Core Details -->
+    <input type="text" placeholder="User" id="coreUser" required>
+    <select id="coreTotal" required>
+        <option value="" disabled selected>Select Total Core</option>
+        <!-- Options from 1 to 16 -->
+        <script>
+            for(let i = 1; i <= 16; i++) {
+                document.write(`<option value="${i}">${i}</option>`);
+            }
+        </script>
+    </select>
+    <input type="number" placeholder="Available Core" id="coreAvailable" min="0" required>
+    <input type="number" placeholder="Core in Process" id="coreProcess" min="0" required>
+
+    <button type="submit">Add to Both Tables</button>
+</form>
+
+<!-- System Table -->
+<h2 style="text-align:center;">System Details</h2>
+<table id="systemTable">
+    <thead>
+        <tr>
+            <th>System Name</th>
+            <th>Allotted To</th>
+            <th>RAM (GB)</th>
+            <th>ROM</th>
+            <th>Processor</th>
+            <th>Generation</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<!-- Core Table -->
+<h2 style="text-align:center;">Core Usage</h2>
+<table id="coreTable">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Total Core</th>
+            <th>Available Core</th>
+            <th>Core in Process</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+document.getElementById('combinedForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Get values
+    let ram = parseInt(document.getElementById('sysRAM').value);
+    let availableCore = parseInt(document.getElementById('coreAvailable').value);
+    let coreProcess = parseInt(document.getElementById('coreProcess').value);
+    let totalCore = parseInt(document.getElementById('coreTotal').value);
+
+    // Validation: No negatives
+    if (ram < 0 || availableCore < 0 || coreProcess < 0) {
+        alert("Values cannot be negative!");
+        return;
+    }
+
+    // Validation: Available + Process should not exceed Total Core
+    if (availableCore + coreProcess > totalCore) {
+        alert("Available Core + Core in Process cannot exceed Total Core!");
+        return;
+    }
+
+    // Add to System Table
+    let sysTable = document.getElementById('systemTable').querySelector('tbody');
+    let sysRow = sysTable.insertRow();
+    sysRow.insertCell(0).textContent = document.getElementById('sysName').value;
+    sysRow.insertCell(1).textContent = document.getElementById('sysAllotted').value;
+    sysRow.insertCell(2).textContent = ram;
+    sysRow.insertCell(3).textContent = document.getElementById('sysROM').value;
+    sysRow.insertCell(4).textContent = document.getElementById('sysProcessor').value;
+    sysRow.insertCell(5).textContent = document.getElementById('sysGeneration').value;
+
+    // Add to Core Table
+    let coreTable = document.getElementById('coreTable').querySelector('tbody');
+    let coreRow = coreTable.insertRow();
+    coreRow.insertCell(0).textContent = document.getElementById('coreUser').value;
+    coreRow.insertCell(1).textContent = totalCore;
+    coreRow.insertCell(2).textContent = availableCore;
+    coreRow.insertCell(3).textContent = coreProcess;
+
+    // Reset form
+    this.reset();
+});
+</script>
+
+</body>
+</html>
