@@ -83,19 +83,19 @@
 
   <!-- History Table -->
   <h2>History</h2>
-<table id="historyTable">
-  <thead>
-    <tr>
-      <th>Serial No</th>
-      <th>Username</th>
-      <th>Cores in Process</th>
-      <th>Start Date</th>
-      <th>End Date</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <table id="historyTable">
+    <thead>
+      <tr>
+        <th>Serial No</th>
+        <th>Username</th>
+        <th>Cores in Process</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
   // 🔗 Replace with your own Google Apps Script Web App URL
@@ -117,24 +117,22 @@
     });
   });
 
-function renderHistory(entries) {
-  const body = document.querySelector("#historyTable tbody");
-  body.innerHTML = "";
-  entries.forEach(e => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${e.serial}</td>
-      <td>${e.username}</td>
-      <td>${e.cores}</td>
-      <td>${e.start}</td>
-      <td>${e.end}</td>
-      <td>${computeStatus(e.end)}</td>
-    `;
-    body.appendChild(tr);
-  });
-}
-
-
+  function renderHistory(entries) {
+    const body = document.querySelector("#historyTable tbody");
+    body.innerHTML = "";
+    entries.forEach(e => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${e.serial}</td>
+        <td>${e.username}</td>
+        <td>${e.cores}</td>
+        <td>${e.start}</td>
+        <td>${e.end}</td>
+        <td>${computeStatus(e.end)}</td>
+      `;
+      body.appendChild(tr);
+    });
+  }
 
   function loadLocalData() {
     const saved = JSON.parse(localStorage.getItem("amslHistory")) || [];
@@ -142,91 +140,83 @@ function renderHistory(entries) {
     serialNo = (saved.reduce((m, e) => Math.max(m, Number(e.serial) || 0), 0)) + 1;
   }
 
-async function loadServerData() {
-  try {
-    const r = await fetch(API_URL, { method: "GET", cache: "no-cache" });
-    const rows = await r.json();
-    const entries = rows.slice(1).map(r => ({   // skip header row
-      serial: r[0],
-      username: r[1],
-      cores: r[2],
-      start: r[3],
-      end: r[4]
-    })).sort((a, b) => Number(b.serial) - Number(a.serial));
-    renderHistory(entries);
-    localStorage.setItem("amslHistory", JSON.stringify(entries));
-    serialNo = (entries.reduce((m, e) => Math.max(m, Number(e.serial) || 0), 0)) + 1;
-  } catch (err) {
-    console.error("GET failed:", err);
-    loadLocalData();
-  }
-}
-
-
-async function saveData(button) {
-  const row = button.closest("tr");
-  const total = parseInt(row.cells[1].innerText, 10);
-
-  const coresInProcess = clamp(parseInt(row.querySelector(".process").value || "0", 10), 1, total);
-  const username = row.querySelector(".username").value.trim();
-  const startDate = row.querySelector(".start").value;
-  const endDate   = row.querySelector(".end").value;
-
-  if (!username || !startDate || !endDate || !coresInProcess) {
-    alert("Please enter User, Cores, Start Date and End Date.");
-    return;
-  }
-
-  const entry = { username, cores: coresInProcess, start: startDate, end: endDate };
-
-  button.disabled = true;
-  button.textContent = "Saving...";
-
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(entry)
-    });
-
-    const srv = await res.json();
-
-    if (srv && srv.ok && srv.serial) {
-      entry.serial = srv.serial;
-      // ✅ Add to history (Google Sheet already has it)
-      const saved = JSON.parse(localStorage.getItem("amslHistory")) || [];
-      saved.unshift(entry);
-      localStorage.setItem("amslHistory", JSON.stringify(saved));
-      renderHistory(saved);
-    } else {
-      alert("Error saving to Google Sheet!");
+  async function loadServerData() {
+    try {
+      const r = await fetch(API_URL, { method: "GET", cache: "no-cache" });
+      const rows = await r.json();
+      const entries = rows.slice(1).map(r => ({   // skip header row
+        serial: r[0],
+        username: r[1],
+        cores: r[2],
+        start: r[3],
+        end: r[4]
+      })).sort((a, b) => Number(b.serial) - Number(a.serial));
+      renderHistory(entries);
+      localStorage.setItem("amslHistory", JSON.stringify(entries));
+      serialNo = (entries.reduce((m, e) => Math.max(m, Number(e.serial) || 0), 0)) + 1;
+    } catch (err) {
+      console.error("GET failed:", err);
+      loadLocalData();
     }
-  } catch (e) {
-    alert("Could not reach Google Sheet. Please check internet or script URL.");
-    console.error("POST failed:", e);
   }
 
-  // reset row
-  row.querySelector(".process").value = "";
-  row.querySelector(".username").value = "";
-  row.querySelector(".start").value = "";
-  row.querySelector(".end").value = "";
-  row.querySelector(".available").innerText = "";
+  async function saveData(button) {
+    const row = button.closest("tr");
+    const total = parseInt(row.cells[1].innerText, 10);
 
-  button.disabled = false;
-  button.textContent = "Save";
-}
+    const coresInProcess = clamp(parseInt(row.querySelector(".process").value || "0", 10), 1, total);
+    const username = row.querySelector(".username").value.trim();
+    const startDate = row.querySelector(".start").value;
+    const endDate   = row.querySelector(".end").value;
 
+    if (!username || !startDate || !endDate || !coresInProcess) {
+      alert("Please enter User, Cores, Start Date and End Date.");
+      return;
+    }
 
-  // First load shared data
-  loadServerData();
-    window.onload = () => {
-  loadServerData();  // always try Google Sheet first
-};
+    const entry = { username, cores: coresInProcess, start: startDate, end: endDate };
 
-</script>
+    button.disabled = true;
+    button.textContent = "Saving...";
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entry)
+      });
+
+      const srv = await res.json();
+
+      if (srv && srv.ok && srv.serial) {
+        entry.serial = srv.serial;
+        const saved = JSON.parse(localStorage.getItem("amslHistory")) || [];
+        saved.unshift(entry);
+        localStorage.setItem("amslHistory", JSON.stringify(saved));
+        renderHistory(saved);
+      } else {
+        alert("Error saving to Google Sheet!");
+      }
+    } catch (e) {
+      alert("Could not reach Google Sheet. Please check internet or script URL.");
+      console.error("POST failed:", e);
+    }
+
+    // reset row
+    row.querySelector(".process").value = "";
+    row.querySelector(".username").value = "";
+    row.querySelector(".start").value = "";
+    row.querySelector(".end").value = "";
+    row.querySelector(".available").innerText = "";
+
+    button.disabled = false;
+    button.textContent = "Save";
+  }
+
+  // ✅ Run when page loads
+  window.onload = () => {
+    loadServerData();
+  };
+  </script>
 </body>
 </html>
-
-
-
