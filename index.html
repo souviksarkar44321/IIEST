@@ -1,50 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AMSL - System Information</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #f8f9fa;
-    }
-    h2 {
-      text-align: center;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 30px;
-    }
-    th, td {
-      border: 1px solid #333;
-      padding: 8px;
-      text-align: center;
-    }
-    th {
-      background-color: #e9ecef;
-    }
-    input {
-      width: 90%;
-      padding: 5px;
-    }
-    button {
-      padding: 5px 10px;
-      cursor: pointer;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
-    button:hover {
-      background: #0056b3;
-    }
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+    h2 { text-align: center; margin-bottom: 15px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    th, td { border: 1px solid #333; padding: 8px; text-align: center; }
+    th { background: #e9ecef; }
+    input { width: 90%; padding: 5px; }
+    button { padding: 5px 10px; cursor: pointer; background: #007bff; color: #fff; border: none; border-radius: 5px; }
+    button:hover { background: #0056b3; }
   </style>
 </head>
 <body>
-
   <h2>AMSL - SYSTEM INFORMATION</h2>
 
   <!-- Input Table -->
@@ -64,7 +35,7 @@
     <tbody>
       <tr>
         <td>Alpha-912</td><td>24</td>
-        <td><input type="number" class="process"></td>
+        <td><input type="number" class="process" min="0"></td>
         <td class="available"></td>
         <td><input type="text" class="username"></td>
         <td><input type="date" class="start"></td>
@@ -73,7 +44,7 @@
       </tr>
       <tr>
         <td>Beta-913</td><td>24</td>
-        <td><input type="number" class="process"></td>
+        <td><input type="number" class="process" min="0"></td>
         <td class="available"></td>
         <td><input type="text" class="username"></td>
         <td><input type="date" class="start"></td>
@@ -82,7 +53,7 @@
       </tr>
       <tr>
         <td>Gamma-16</td><td>16</td>
-        <td><input type="number" class="process"></td>
+        <td><input type="number" class="process" min="0"></td>
         <td class="available"></td>
         <td><input type="text" class="username"></td>
         <td><input type="date" class="start"></td>
@@ -91,7 +62,7 @@
       </tr>
       <tr>
         <td>Delta-96</td><td>96</td>
-        <td><input type="number" class="process"></td>
+        <td><input type="number" class="process" min="0"></td>
         <td class="available"></td>
         <td><input type="text" class="username"></td>
         <td><input type="date" class="start"></td>
@@ -100,7 +71,7 @@
       </tr>
       <tr>
         <td>Lambda-256</td><td>256</td>
-        <td><input type="number" class="process"></td>
+        <td><input type="number" class="process" min="0"></td>
         <td class="available"></td>
         <td><input type="text" class="username"></td>
         <td><input type="date" class="start"></td>
@@ -112,124 +83,150 @@
 
   <!-- History Table -->
   <h2>History</h2>
-  <table id="historyTable">
-    <thead>
-      <tr>
-        <th>Serial No.</th>
-        <th>User Name</th>
-        <th>System Name</th>
-        <th>Cores in Process</th>
-        <th>Start Date</th>
-        <th>End Date</th>
-        <th>Current Status</th>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
+<table id="historyTable">
+  <thead>
+    <tr>
+      <th>Serial No</th>
+      <th>Username</th>
+      <th>Cores in Process</th>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
   <script>
-    // 🔹 Replace this with your Apps Script Web App URL
-    const API_URL = "https://script.google.com/macros/s/AKfycbwE4yyPS-VWqva7Ti2kbVYZsEzsfVUGfeWd9t1jTTobSyBreFk5-y2RnSqNwuk9e9OqWg/exec";
+  // 🔗 Replace with your own Google Apps Script Web App URL
+  const API_URL = "https://script.google.com/macros/s/AKfycbxkeRSMfffznJ55ajgDwy_4Zwn2gGHKFoV2fPDREijm/dev";  
 
-    let serialNo = 1;
+  let serialNo = 1;
 
-    // live update of available cores
-    document.querySelectorAll(".process").forEach(input => {
-      input.addEventListener("input", function() {
-        const row = this.closest("tr");
-        const totalCores = parseInt(row.cells[1].innerText);
-        const coresInProcess = parseInt(this.value) || 0;
-        row.querySelector(".available").innerText = totalCores - coresInProcess;
-      });
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  const computeStatus = (endISO) => (new Date() <= new Date(endISO) ? "Running" : "Completed");
+
+  // Live available cores update
+  document.querySelectorAll(".process").forEach(input => {
+    input.addEventListener("input", function () {
+      const row = this.closest("tr");
+      const total = parseInt(row.cells[1].innerText, 10);
+      const cores = clamp(parseInt(this.value || "0", 10), 0, total);
+      this.value = isNaN(cores) ? "" : cores;
+      row.querySelector(".available").innerText = isNaN(cores) ? "" : (total - cores);
     });
+  });
 
-    async function saveData(button) {
-      const row = button.closest("tr");
-      const today = new Date();
+  function renderHistory(entries) {
+  const body = document.querySelector("#historyTable tbody");
+  body.innerHTML = "";
+  entries.forEach(e => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${e.serial}</td>
+      <td>${e.username}</td>
+      <td>${e.cores}</td>
+      <td>${e.start}</td>
+      <td>${e.end}</td>
+      <td>${computeStatus(e.end)}</td>
+    `;
+    body.appendChild(tr);
+  });
+}
 
-      const systemName = row.cells[0].innerText;
-      const totalCores = parseInt(row.cells[1].innerText);
-      const processInput = row.querySelector(".process");
-      const usernameInput = row.querySelector(".username");
-      const startInput = row.querySelector(".start");
-      const endInput = row.querySelector(".end");
 
-      const coresInProcess = parseInt(processInput.value) || 0;
-      const availableCores = totalCores - coresInProcess;
-      row.querySelector(".available").innerText = availableCores;
+  function loadLocalData() {
+    const saved = JSON.parse(localStorage.getItem("amslHistory")) || [];
+    renderHistory(saved);
+    serialNo = (saved.reduce((m, e) => Math.max(m, Number(e.serial) || 0), 0)) + 1;
+  }
 
-      const username = usernameInput.value;
-      const startDate = startInput.value;
-      const endDate = endInput.value;
+  async function loadServerData() {
+    try {
+      const r = await fetch(API_URL, { method: "GET", cache: "no-cache" });
+      const rows = await r.json();
+      const entries = rows.slice(1).map(r => ({   // ⚡ Skip header row
+        serial: r[0],
+        username: r[1],
+        system: r[2],
+        cores: r[3],
+        start: r[4],
+        end: r[5],
+      })).sort((a, b) => Number(b.serial) - Number(a.serial));
+      renderHistory(entries);
+      localStorage.setItem("amslHistory", JSON.stringify(entries));
+      serialNo = (entries.reduce((m, e) => Math.max(m, Number(e.serial) || 0), 0)) + 1;
+    } catch (err) {
+      console.error("GET failed:", err);
+      loadLocalData();
+    }
+  }
 
-      if (username && coresInProcess > 0 && startDate && endDate) {
-        const end = new Date(endDate);
-        const status = today <= end ? "Running" : "Completed";
+  async function saveData(button) {
+    const row = button.closest("tr");
+    const systemName = row.cells[0].innerText;   // ⚡ Grab system name
+    const total = parseInt(row.cells[1].innerText, 10);
 
-        // send to Google Sheets
-        await fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            serial: serialNo++,
-            username: username,
-            system: systemName,
-            cores: coresInProcess,
-            start: startDate,
-            end: endDate,
-            status: status
-          })
-        });
+    const coresInProcess = clamp(parseInt(row.querySelector(".process").value || "0", 10), 1, total);
+    const username = row.querySelector(".username").value.trim();
+    const startDate = row.querySelector(".start").value;
+    const endDate   = row.querySelector(".end").value;
 
-        // show instantly in history table
-        const historyBody = document.querySelector("#historyTable tbody");
-        const newRow = document.createElement("tr");
-        newRow.innerHTML = `
-          <td>${serialNo - 1}</td>
-          <td>${username}</td>
-          <td>${systemName}</td>
-          <td>${coresInProcess}</td>
-          <td>${startDate}</td>
-          <td>${endDate}</td>
-          <td>${status}</td>
-        `;
-        historyBody.insertBefore(newRow, historyBody.firstChild);
-
-        // clear inputs
-        processInput.value = "";
-        usernameInput.value = "";
-        startInput.value = "";
-        endInput.value = "";
-        row.querySelector(".available").innerText = "";
-      }
+    if (!username || !startDate || !endDate || !coresInProcess) {
+      alert("Please enter User, Cores in Process (>0), Start Date and End Date.");
+      return;
     }
 
-    // load existing data from Google Sheets
-    async function loadData() {
-      const res = await fetch(API_URL);
-      const data = await res.json();
-      const historyBody = document.querySelector("#historyTable tbody");
-      historyBody.innerHTML = "";
+    const entry = {
+      serial: serialNo,
+      username,
+      system: systemName,   // ⚡ Now included
+      cores: coresInProcess,
+      start: startDate,
+      end: endDate
+    };
 
-      data.slice(1).reverse().forEach(row => {
-        const newRow = document.createElement("tr");
-        newRow.innerHTML = `
-          <td>${row[0]}</td>
-          <td>${row[1]}</td>
-          <td>${row[2]}</td>
-          <td>${row[3]}</td>
-          <td>${row[4]}</td>
-          <td>${row[5]}</td>
-          <td>${row[6]}</td>
-        `;
-        historyBody.appendChild(newRow);
+    button.disabled = true;
+    button.textContent = "Saving...";
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entry)
       });
-      serialNo = data.length;
+
+      const srv = await res.json();
+      if (srv && srv.ok && srv.serial) {
+        entry.serial = srv.serial;
+        serialNo = srv.serial + 1;
+      } else {
+        serialNo += 1;
+      }
+    } catch (e) {
+      console.error("POST failed:", e);
+      serialNo += 1;
     }
 
-    loadData();
-  </script>
+    // ✅ Always add latest on top
+    const saved = JSON.parse(localStorage.getItem("amslHistory")) || [];
+    saved.unshift(entry);
+    localStorage.setItem("amslHistory", JSON.stringify(saved));
+    renderHistory(saved);
 
+    // Clear row
+    row.querySelector(".process").value = "";
+    row.querySelector(".username").value = "";
+    row.querySelector(".start").value = "";
+    row.querySelector(".end").value = "";
+    row.querySelector(".available").innerText = "";
+
+    button.disabled = false;
+    button.textContent = "Save";
+  }
+
+  // First load shared data
+  loadServerData();
+</script>
 </body>
 </html>
-
