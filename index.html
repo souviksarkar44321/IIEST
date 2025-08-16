@@ -129,9 +129,12 @@
   </table>
 
   <script>
+    // 🔹 Replace this with your Apps Script Web App URL
+    const API_URL = "PASTE_YOUR_DEPLOYMENT_URL_HERE";
+
     let serialNo = 1;
 
-    // update available cores dynamically
+    // live update of available cores
     document.querySelectorAll(".process").forEach(input => {
       input.addEventListener("input", function() {
         const row = this.closest("tr");
@@ -141,9 +144,8 @@
       });
     });
 
-    function saveData(button) {
+    async function saveData(button) {
       const row = button.closest("tr");
-      const historyBody = document.querySelector("#historyTable tbody");
       const today = new Date();
 
       const systemName = row.cells[0].innerText;
@@ -165,10 +167,25 @@
         const end = new Date(endDate);
         const status = today <= end ? "Running" : "Completed";
 
-        // New row at top of history
+        // send to Google Sheets
+        await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            serial: serialNo++,
+            username: username,
+            system: systemName,
+            cores: coresInProcess,
+            start: startDate,
+            end: endDate,
+            status: status
+          })
+        });
+
+        // show instantly in history table
+        const historyBody = document.querySelector("#historyTable tbody");
         const newRow = document.createElement("tr");
         newRow.innerHTML = `
-          <td>${serialNo++}</td>
+          <td>${serialNo - 1}</td>
           <td>${username}</td>
           <td>${systemName}</td>
           <td>${coresInProcess}</td>
@@ -178,7 +195,7 @@
         `;
         historyBody.insertBefore(newRow, historyBody.firstChild);
 
-        // Clear inputs
+        // clear inputs
         processInput.value = "";
         usernameInput.value = "";
         startInput.value = "";
@@ -186,6 +203,31 @@
         row.querySelector(".available").innerText = "";
       }
     }
+
+    // load existing data from Google Sheets
+    async function loadData() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const historyBody = document.querySelector("#historyTable tbody");
+      historyBody.innerHTML = "";
+
+      data.slice(1).reverse().forEach(row => {
+        const newRow = document.createElement("tr");
+        newRow.innerHTML = `
+          <td>${row[0]}</td>
+          <td>${row[1]}</td>
+          <td>${row[2]}</td>
+          <td>${row[3]}</td>
+          <td>${row[4]}</td>
+          <td>${row[5]}</td>
+          <td>${row[6]}</td>
+        `;
+        historyBody.appendChild(newRow);
+      });
+      serialNo = data.length;
+    }
+
+    loadData();
   </script>
 
 </body>
