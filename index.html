@@ -117,7 +117,7 @@
     });
   });
 
-  function renderHistory(entries) {
+function renderHistory(entries) {
   const body = document.querySelector("#historyTable tbody");
   body.innerHTML = "";
   entries.forEach(e => {
@@ -135,98 +135,98 @@
 }
 
 
+
   function loadLocalData() {
     const saved = JSON.parse(localStorage.getItem("amslHistory")) || [];
     renderHistory(saved);
     serialNo = (saved.reduce((m, e) => Math.max(m, Number(e.serial) || 0), 0)) + 1;
   }
 
-  async function loadServerData() {
-    try {
-      const r = await fetch(API_URL, { method: "GET", cache: "no-cache" });
-      const rows = await r.json();
-      const entries = rows.slice(1).map(r => ({   // ⚡ Skip header row
-        serial: r[0],
-        username: r[1],
-        system: r[2],
-        cores: r[3],
-        start: r[4],
-        end: r[5],
-      })).sort((a, b) => Number(b.serial) - Number(a.serial));
-      renderHistory(entries);
-      localStorage.setItem("amslHistory", JSON.stringify(entries));
-      serialNo = (entries.reduce((m, e) => Math.max(m, Number(e.serial) || 0), 0)) + 1;
-    } catch (err) {
-      console.error("GET failed:", err);
-      loadLocalData();
-    }
+async function loadServerData() {
+  try {
+    const r = await fetch(API_URL, { method: "GET", cache: "no-cache" });
+    const rows = await r.json();
+    const entries = rows.slice(1).map(r => ({   // skip header row
+      serial: r[0],
+      username: r[1],
+      cores: r[2],
+      start: r[3],
+      end: r[4]
+    })).sort((a, b) => Number(b.serial) - Number(a.serial));
+    renderHistory(entries);
+    localStorage.setItem("amslHistory", JSON.stringify(entries));
+    serialNo = (entries.reduce((m, e) => Math.max(m, Number(e.serial) || 0), 0)) + 1;
+  } catch (err) {
+    console.error("GET failed:", err);
+    loadLocalData();
+  }
+}
+
+
+ async function saveData(button) {
+  const row = button.closest("tr");
+  const total = parseInt(row.cells[1].innerText, 10);
+
+  const coresInProcess = clamp(parseInt(row.querySelector(".process").value || "0", 10), 1, total);
+  const username = row.querySelector(".username").value.trim();
+  const startDate = row.querySelector(".start").value;
+  const endDate   = row.querySelector(".end").value;
+
+  if (!username || !startDate || !endDate || !coresInProcess) {
+    alert("Please enter User, Cores in Process (>0), Start Date and End Date.");
+    return;
   }
 
-  async function saveData(button) {
-    const row = button.closest("tr");
-    const systemName = row.cells[0].innerText;   // ⚡ Grab system name
-    const total = parseInt(row.cells[1].innerText, 10);
+  const entry = {
+    serial: serialNo,
+    username,
+    cores: coresInProcess,
+    start: startDate,
+    end: endDate
+  };
 
-    const coresInProcess = clamp(parseInt(row.querySelector(".process").value || "0", 10), 1, total);
-    const username = row.querySelector(".username").value.trim();
-    const startDate = row.querySelector(".start").value;
-    const endDate   = row.querySelector(".end").value;
+  button.disabled = true;
+  button.textContent = "Saving...";
 
-    if (!username || !startDate || !endDate || !coresInProcess) {
-      alert("Please enter User, Cores in Process (>0), Start Date and End Date.");
-      return;
-    }
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(entry)
+    });
 
-    const entry = {
-      serial: serialNo,
-      username,
-      system: systemName,   // ⚡ Now included
-      cores: coresInProcess,
-      start: startDate,
-      end: endDate
-    };
-
-    button.disabled = true;
-    button.textContent = "Saving...";
-
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(entry)
-      });
-
-      const srv = await res.json();
-      if (srv && srv.ok && srv.serial) {
-        entry.serial = srv.serial;
-        serialNo = srv.serial + 1;
-      } else {
-        serialNo += 1;
-      }
-    } catch (e) {
-      console.error("POST failed:", e);
+    const srv = await res.json();
+    if (srv && srv.ok && srv.serial) {
+      entry.serial = srv.serial;
+      serialNo = srv.serial + 1;
+    } else {
       serialNo += 1;
     }
-
-    // ✅ Always add latest on top
-    const saved = JSON.parse(localStorage.getItem("amslHistory")) || [];
-    saved.unshift(entry);
-    localStorage.setItem("amslHistory", JSON.stringify(saved));
-    renderHistory(saved);
-
-    // Clear row
-    row.querySelector(".process").value = "";
-    row.querySelector(".username").value = "";
-    row.querySelector(".start").value = "";
-    row.querySelector(".end").value = "";
-    row.querySelector(".available").innerText = "";
-
-    button.disabled = false;
-    button.textContent = "Save";
+  } catch (e) {
+    console.error("POST failed:", e);
+    serialNo += 1;
   }
+
+  // ✅ Always add latest on top
+  const saved = JSON.parse(localStorage.getItem("amslHistory")) || [];
+  saved.unshift(entry);
+  localStorage.setItem("amslHistory", JSON.stringify(saved));
+  renderHistory(saved);
+
+  // Clear row
+  row.querySelector(".process").value = "";
+  row.querySelector(".username").value = "";
+  row.querySelector(".start").value = "";
+  row.querySelector(".end").value = "";
+  row.querySelector(".available").innerText = "";
+
+  button.disabled = false;
+  button.textContent = "Save";
+}
 
   // First load shared data
   loadServerData();
 </script>
 </body>
 </html>
+
