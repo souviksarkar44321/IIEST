@@ -163,7 +163,7 @@ async function loadServerData() {
 }
 
 
- async function saveData(button) {
+async function saveData(button) {
   const row = button.closest("tr");
   const total = parseInt(row.cells[1].innerText, 10);
 
@@ -173,17 +173,11 @@ async function loadServerData() {
   const endDate   = row.querySelector(".end").value;
 
   if (!username || !startDate || !endDate || !coresInProcess) {
-    alert("Please enter User, Cores in Process (>0), Start Date and End Date.");
+    alert("Please enter User, Cores, Start Date and End Date.");
     return;
   }
 
-  const entry = {
-    serial: serialNo,
-    username,
-    cores: coresInProcess,
-    start: startDate,
-    end: endDate
-  };
+  const entry = { username, cores: coresInProcess, start: startDate, end: endDate };
 
   button.disabled = true;
   button.textContent = "Saving...";
@@ -196,24 +190,23 @@ async function loadServerData() {
     });
 
     const srv = await res.json();
+
     if (srv && srv.ok && srv.serial) {
       entry.serial = srv.serial;
-      serialNo = srv.serial + 1;
+      // ✅ Add to history (Google Sheet already has it)
+      const saved = JSON.parse(localStorage.getItem("amslHistory")) || [];
+      saved.unshift(entry);
+      localStorage.setItem("amslHistory", JSON.stringify(saved));
+      renderHistory(saved);
     } else {
-      serialNo += 1;
+      alert("Error saving to Google Sheet!");
     }
   } catch (e) {
+    alert("Could not reach Google Sheet. Please check internet or script URL.");
     console.error("POST failed:", e);
-    serialNo += 1;
   }
 
-  // ✅ Always add latest on top
-  const saved = JSON.parse(localStorage.getItem("amslHistory")) || [];
-  saved.unshift(entry);
-  localStorage.setItem("amslHistory", JSON.stringify(saved));
-  renderHistory(saved);
-
-  // Clear row
+  // reset row
   row.querySelector(".process").value = "";
   row.querySelector(".username").value = "";
   row.querySelector(".start").value = "";
@@ -224,9 +217,15 @@ async function loadServerData() {
   button.textContent = "Save";
 }
 
+
   // First load shared data
   loadServerData();
+    window.onload = () => {
+  loadServerData();  // always try Google Sheet first
+};
+
 </script>
 </body>
 </html>
+
 
