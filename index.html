@@ -83,23 +83,23 @@
 
   <!-- History Table -->
   <h2>History</h2>
-  <table id="historyTable">
-    <thead>
-      <tr>
-        <th>Serial No</th>
-        <th>Username</th>
-        <th>Cores in Process</th>
-        <th>Start Date</th>
-        <th>End Date</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<table id="historyTable">
+  <thead>
+    <tr>
+      <th>Serial No</th>
+      <th>Username</th>
+      <th>Cores in Process</th>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
   <script>
   // 🔗 Replace with your own Google Apps Script Web App URL
-  const API_URL = "https://script.google.com/macros/s/AKfycbwR4VT4-GJDpokMNpw3linFM83LF803gW6LtJegk0IqPYrLxDC-obLyjw9DUTcKRtSe/exec";  
+  const API_URL = "https://script.google.com/macros/s/AKfycbydzNKWHSNiZLtJUSArnyzleMQdt6YOvwYF53QVkuCDeAYN796W8_sqaabsqLxaE4S7iw/exec";  
 
   let serialNo = 1;
 
@@ -118,21 +118,22 @@
   });
 
   function renderHistory(entries) {
-    const body = document.querySelector("#historyTable tbody");
-    body.innerHTML = "";
-    entries.forEach(e => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${e.serial}</td>
-        <td>${e.username}</td>
-        <td>${e.cores}</td>
-        <td>${e.start}</td>
-        <td>${e.end}</td>
-        <td>${computeStatus(e.end)}</td>
-      `;
-      body.appendChild(tr);
-    });
-  }
+  const body = document.querySelector("#historyTable tbody");
+  body.innerHTML = "";
+  entries.forEach(e => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${e.serial}</td>
+      <td>${e.username}</td>
+      <td>${e.cores}</td>
+      <td>${e.start}</td>
+      <td>${e.end}</td>
+      <td>${computeStatus(e.end)}</td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
 
   function loadLocalData() {
     const saved = JSON.parse(localStorage.getItem("amslHistory")) || [];
@@ -144,12 +145,13 @@
     try {
       const r = await fetch(API_URL, { method: "GET", cache: "no-cache" });
       const rows = await r.json();
-      const entries = rows.slice(1).map(r => ({   // skip header row
+      const entries = rows.slice(1).map(r => ({   // ⚡ Skip header row
         serial: r[0],
         username: r[1],
-        cores: r[2],
-        start: r[3],
-        end: r[4]
+        system: r[2],
+        cores: r[3],
+        start: r[4],
+        end: r[5],
       })).sort((a, b) => Number(b.serial) - Number(a.serial));
       renderHistory(entries);
       localStorage.setItem("amslHistory", JSON.stringify(entries));
@@ -162,6 +164,7 @@
 
   async function saveData(button) {
     const row = button.closest("tr");
+    const systemName = row.cells[0].innerText;   // ⚡ Grab system name
     const total = parseInt(row.cells[1].innerText, 10);
 
     const coresInProcess = clamp(parseInt(row.querySelector(".process").value || "0", 10), 1, total);
@@ -170,11 +173,18 @@
     const endDate   = row.querySelector(".end").value;
 
     if (!username || !startDate || !endDate || !coresInProcess) {
-      alert("Please enter User, Cores, Start Date and End Date.");
+      alert("Please enter User, Cores in Process (>0), Start Date and End Date.");
       return;
     }
 
-    const entry = { username, cores: coresInProcess, start: startDate, end: endDate };
+    const entry = {
+      serial: serialNo,
+      username,
+      system: systemName,   // ⚡ Now included
+      cores: coresInProcess,
+      start: startDate,
+      end: endDate
+    };
 
     button.disabled = true;
     button.textContent = "Saving...";
@@ -187,22 +197,24 @@
       });
 
       const srv = await res.json();
-
       if (srv && srv.ok && srv.serial) {
         entry.serial = srv.serial;
-        const saved = JSON.parse(localStorage.getItem("amslHistory")) || [];
-        saved.unshift(entry);
-        localStorage.setItem("amslHistory", JSON.stringify(saved));
-        renderHistory(saved);
+        serialNo = srv.serial + 1;
       } else {
-        alert("Error saving to Google Sheet!");
+        serialNo += 1;
       }
     } catch (e) {
-      alert("Could not reach Google Sheet. Please check internet or script URL.");
       console.error("POST failed:", e);
+      serialNo += 1;
     }
 
-    // reset row
+    // ✅ Always add latest on top
+    const saved = JSON.parse(localStorage.getItem("amslHistory")) || [];
+    saved.unshift(entry);
+    localStorage.setItem("amslHistory", JSON.stringify(saved));
+    renderHistory(saved);
+
+    // Clear row
     row.querySelector(".process").value = "";
     row.querySelector(".username").value = "";
     row.querySelector(".start").value = "";
@@ -213,15 +225,8 @@
     button.textContent = "Save";
   }
 
-  // ✅ Run when page loads
-  window.onload = () => {
-    loadServerData();
-  };
-  </script>
+  // First load shared data
+  loadServerData();
+</script>
 </body>
 </html>
-
-
-
-
-
