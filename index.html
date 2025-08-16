@@ -1,205 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Core Usage Table</title>
-<style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMSL - System Information</title>
+  <style>
     body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        background-color: #f8f9fa;
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f8f9fa;
     }
     h2 {
-        text-align: center;
+      text-align: center;
     }
     table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        background: white;
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
     }
     th, td {
-        border: 1px solid #ccc;
-        padding: 8px;
-        text-align: center;
+      border: 1px solid #333;
+      padding: 8px;
+      text-align: center;
     }
     th {
-        background-color: #007bff;
-        color: white;
+      background-color: #e9ecef;
     }
-    input[type="number"], input[type="date"], input[type="text"], select {
-        width: 100%;
-        padding: 4px;
-        box-sizing: border-box;
+    input {
+      width: 90%;
+      padding: 5px;
     }
     button {
-        padding: 4px 8px;
-        background-color: #28a745;
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
     }
     button:hover {
-        background-color: #218838;
+      background: #0056b3;
     }
-    .readonly {
-        background-color: #f0f0f0;
-        pointer-events: none;
-    }
-</style>
+  </style>
 </head>
 <body>
 
-<h2>System Information - Core Usage</h2>
+  <h2>AMSL - SYSTEM INFORMATION</h2>
 
-<table id="coreTable">
+  <!-- Input Table -->
+  <table id="inputTable">
     <thead>
-        <tr>
-            <th>Serial No.</th>
-            <th>System Name</th>
-            <th>Total Cores</th>
-            <th>Cores in Process</th>
-            <th>Available Cores</th>
-            <th>User's Name</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Editable System Name</th>
-            <th>Cores in Process</th>
-            <th>Current Status</th>
-            <th>Action</th>
-        </tr>
+      <tr>
+        <th>System Name</th>
+        <th>Total Cores</th>
+        <th>Cores in Process</th>
+        <th>Available Cores</th>
+        <th>User's Name</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Action</th>
+      </tr>
     </thead>
     <tbody>
-        <!-- Rows will be generated here -->
+      <tr>
+        <td>Alpha-912</td><td>24</td>
+        <td><input type="number" class="process"></td>
+        <td class="available"></td>
+        <td><input type="text" class="username"></td>
+        <td><input type="date" class="start"></td>
+        <td><input type="date" class="end"></td>
+        <td><button onclick="saveData(this)">Save</button></td>
+      </tr>
+      <tr>
+        <td>Beta-913</td><td>24</td>
+        <td><input type="number" class="process"></td>
+        <td class="available"></td>
+        <td><input type="text" class="username"></td>
+        <td><input type="date" class="start"></td>
+        <td><input type="date" class="end"></td>
+        <td><button onclick="saveData(this)">Save</button></td>
+      </tr>
+      <tr>
+        <td>Gamma-16</td><td>16</td>
+        <td><input type="number" class="process"></td>
+        <td class="available"></td>
+        <td><input type="text" class="username"></td>
+        <td><input type="date" class="start"></td>
+        <td><input type="date" class="end"></td>
+        <td><button onclick="saveData(this)">Save</button></td>
+      </tr>
+      <tr>
+        <td>Delta-96</td><td>96</td>
+        <td><input type="number" class="process"></td>
+        <td class="available"></td>
+        <td><input type="text" class="username"></td>
+        <td><input type="date" class="start"></td>
+        <td><input type="date" class="end"></td>
+        <td><button onclick="saveData(this)">Save</button></td>
+      </tr>
+      <tr>
+        <td>Lambda-256</td><td>256</td>
+        <td><input type="number" class="process"></td>
+        <td class="available"></td>
+        <td><input type="text" class="username"></td>
+        <td><input type="date" class="start"></td>
+        <td><input type="date" class="end"></td>
+        <td><button onclick="saveData(this)">Save</button></td>
+      </tr>
     </tbody>
-</table>
+  </table>
 
-<script>
-    // Fixed 22 systems with total cores
-    const systems = [
-        { name: "Alpha-912", totalCores: 24 },
-        { name: "Beta-913", totalCores: 24 },
-        { name: "Gama-16", totalCores: 16 },
-        { name: "Delta-96", totalCores: 96 },
-        { name: "Lambda-256", totalCores: 256 },
-        { name: "System-6", totalCores: 96 },
-        { name: "System-7", totalCores: 128 },
-        { name: "System-8", totalCores: 160 },
-        { name: "System-9", totalCores: 192 },
-        { name: "System-10", totalCores: 256 },
-        { name: "System-11", totalCores: 320 },
-        { name: "System-12", totalCores: 384 },
-        { name: "System-13", totalCores: 512 },
-        { name: "System-14", totalCores: 640 },
-        { name: "System-15", totalCores: 768 },
-        { name: "System-16", totalCores: 896 },
-        { name: "System-17", totalCores: 1024 },
-        { name: "System-18", totalCores: 1280 },
-        { name: "System-19", totalCores: 1536 },
-        { name: "System-20", totalCores: 1792 },
-        { name: "System-21", totalCores: 2048 },
-        { name: "System-22", totalCores: 2048 }
-    ];
+  <!-- History Table -->
+  <h2>History</h2>
+  <table id="historyTable">
+    <thead>
+      <tr>
+        <th>Serial No.</th>
+        <th>User Name</th>
+        <th>System Name</th>
+        <th>Cores in Process</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Current Status</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
 
-    const tableBody = document.querySelector("#coreTable tbody");
+  <script>
+    let serialNo = 1;
 
-    let savedData = JSON.parse(localStorage.getItem("coreTableData")) || [];
+    // update available cores dynamically
+    document.querySelectorAll(".process").forEach(input => {
+      input.addEventListener("input", function() {
+        const row = this.closest("tr");
+        const totalCores = parseInt(row.cells[1].innerText);
+        const coresInProcess = parseInt(this.value) || 0;
+        row.querySelector(".available").innerText = totalCores - coresInProcess;
+      });
+    });
 
-    systems.forEach((sys, index) => {
-        let rowData = savedData.find(item => item.system === sys.name) || {
-            system: sys.name,
-            totalCores: sys.totalCores,
-            coreProcess: "",
-            availableCores: sys.totalCores,
-            user: "",
-            startDate: "",
-            endDate: "",
-            editableSystem: sys.name,
-            editableCores: "",
-            status: "Running"
-        };
+    function saveData(button) {
+      const row = button.closest("tr");
+      const historyBody = document.querySelector("#historyTable tbody");
+      const today = new Date();
 
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${rowData.system}</td>
-            <td>${rowData.totalCores}</td>
-            <td><input type="number" min="0" value="${rowData.coreProcess}" class="coreProcess readonly"></td>
-            <td class="availableCores">${rowData.availableCores}</td>
-            <td><input type="text" value="${rowData.user}" class="readonly"></td>
-            <td><input type="date" value="${rowData.startDate}" class="readonly"></td>
-            <td><input type="date" value="${rowData.endDate}" class="readonly"></td>
-            <td><input type="text" value="${rowData.editableSystem}" class="readonly"></td>
-            <td><input type="number" min="0" value="${rowData.editableCores}" class="readonly"></td>
-            <td>
-                <select class="readonly">
-                    <option value="Running" ${rowData.status === "Running" ? "selected" : ""}>Running</option>
-                    <option value="Completed" ${rowData.status === "Completed" ? "selected" : ""}>Completed</option>
-                </select>
-            </td>
-            <td><button class="editBtn">Edit</button></td>
+      const systemName = row.cells[0].innerText;
+      const totalCores = parseInt(row.cells[1].innerText);
+      const processInput = row.querySelector(".process");
+      const usernameInput = row.querySelector(".username");
+      const startInput = row.querySelector(".start");
+      const endInput = row.querySelector(".end");
+
+      const coresInProcess = parseInt(processInput.value) || 0;
+      const availableCores = totalCores - coresInProcess;
+      row.querySelector(".available").innerText = availableCores;
+
+      const username = usernameInput.value;
+      const startDate = startInput.value;
+      const endDate = endInput.value;
+
+      if (username && coresInProcess > 0 && startDate && endDate) {
+        const end = new Date(endDate);
+        const status = today <= end ? "Running" : "Completed";
+
+        // New row at top of history
+        const newRow = document.createElement("tr");
+        newRow.innerHTML = `
+          <td>${serialNo++}</td>
+          <td>${username}</td>
+          <td>${systemName}</td>
+          <td>${coresInProcess}</td>
+          <td>${startDate}</td>
+          <td>${endDate}</td>
+          <td>${status}</td>
         `;
-        tableBody.appendChild(row);
-    });
+        historyBody.insertBefore(newRow, historyBody.firstChild);
 
-    document.addEventListener("input", function (event) {
-        const row = event.target.closest("tr");
-        if (row) {
-            const total = parseInt(row.children[2].innerText) || 0; // fixed total cores
-            const inProcess = parseInt(row.querySelector(".coreProcess").value) || 0;
-            row.querySelector(".availableCores").innerText = Math.max(total - inProcess, 0);
-        }
-    });
-
-    document.addEventListener("click", function (event) {
-        if (event.target.classList.contains("editBtn")) {
-            const row = event.target.closest("tr");
-            const inputs = row.querySelectorAll("input, select");
-
-            if (event.target.innerText === "Edit") {
-                inputs.forEach(input => input.classList.remove("readonly"));
-                event.target.innerText = "Save";
-                event.target.style.backgroundColor = "#ffc107";
-            } else {
-                inputs.forEach(input => input.classList.add("readonly"));
-                event.target.innerText = "Edit";
-                event.target.style.backgroundColor = "#28a745";
-
-                saveTableData();
-                row.parentNode.prepend(row);
-                updateSerialNumbers();
-            }
-        }
-    });
-
-    function saveTableData() {
-        let data = [];
-        document.querySelectorAll("#coreTable tbody tr").forEach(row => {
-            data.push({
-                system: row.children[1].innerText,
-                totalCores: parseInt(row.children[2].innerText),
-                coreProcess: row.querySelector(".coreProcess").value,
-                availableCores: parseInt(row.querySelector(".availableCores").innerText),
-                user: row.children[5].querySelector("input").value,
-                startDate: row.children[6].querySelector("input").value,
-                endDate: row.children[7].querySelector("input").value,
-                editableSystem: row.children[8].querySelector("input").value,
-                editableCores: row.children[9].querySelector("input").value,
-                status: row.children[10].querySelector("select").value
-            });
-        });
-        localStorage.setItem("coreTableData", JSON.stringify(data));
+        // Clear inputs
+        processInput.value = "";
+        usernameInput.value = "";
+        startInput.value = "";
+        endInput.value = "";
+        row.querySelector(".available").innerText = "";
+      }
     }
-
-    function updateSerialNumbers() {
-        const rows = tableBody.querySelectorAll("tr");
-        rows.forEach((row, index) => {
-            row.children[0].innerText = index + 1;
-        });
-    }
-</script>
+  </script>
 
 </body>
 </html>
